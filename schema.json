@@ -17,12 +17,53 @@
     },
     "positive_prompt": {
       "type": "string",
-      "description": "Prompt",
+      "description": "Positive Prompt",
       "widget": "textarea"
+    },
+    "height": {
+      "type": "integer",
+      "description": "Height"
+    },
+    "width": {
+      "type": "integer",
+      "description": "Width"
+    },
+    "video_length": {
+      "type": "integer",
+      "description": "Video Length"
     },
     "seed": {
       "type": "integer",
       "description": "Seed (if 0 random)"
+    },
+    "negative_prompt": {
+      "type": "string",
+      "description": "Negative Prompt",
+      "widget": "textarea"
+    },
+    "infer_steps": {
+      "type": "integer",
+      "description": "infer_steps"
+    },
+    "guidance_scale": {
+      "type": "number",
+      "description": "Guidance Scale"
+    },
+    "num_videos_per_prompt": {
+      "type": "integer",
+      "description": "Num Videos Per Prompt"
+    },
+    "flow_shift": {
+      "type": "number",
+      "description": "Flow Shift"
+    },
+    "batch_size": {
+      "type": "integer",
+      "description": "Batch Size"
+    },
+    "embedded_guidance_scale": {
+      "type": "number",
+      "description": "Embedded Guidance Scale"
     },
     "example": {
       "type": "string",
