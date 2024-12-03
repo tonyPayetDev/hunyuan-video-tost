@@ -21,7 +21,7 @@ def generate(input):
     args = hunyuan_video_sampler.args
 
     outputs = hunyuan_video_sampler.predict(
-        prompt=prompt, 
+        prompt=positive_prompt, 
         height=args.video_size[0],
         width=args.video_size[1],
         video_length=args.video_length,
