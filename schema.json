@@ -22,15 +22,18 @@
     },
     "height": {
       "type": "integer",
-      "description": "Height"
+      "description": "Height",
+      "widget": "hidden"
     },
     "width": {
       "type": "integer",
-      "description": "Width"
+      "description": "Width",
+      "widget": "hidden"
     },
     "video_length": {
       "type": "integer",
-      "description": "Video Length"
+      "description": "Video Length",
+      "widget": "hidden"
     },
     "seed": {
       "type": "integer",
@@ -43,34 +46,42 @@
     },
     "infer_steps": {
       "type": "integer",
-      "description": "infer_steps"
+      "description": "infer_steps",
+      "widget": "hidden"
     },
     "guidance_scale": {
       "type": "number",
-      "description": "Guidance Scale"
+      "description": "Guidance Scale",
+      "widget": "hidden"
     },
     "num_videos_per_prompt": {
       "type": "integer",
-      "description": "Num Videos Per Prompt"
+      "description": "Num Videos Per Prompt",
+      "widget": "hidden"
     },
     "flow_shift": {
       "type": "number",
-      "description": "Flow Shift"
+      "description": "Flow Shift",
+      "widget": "hidden"
     },
     "batch_size": {
       "type": "integer",
-      "description": "Batch Size"
+      "description": "Batch Size",
+      "widget": "hidden"
     },
     "embedded_guidance_scale": {
       "type": "number",
-      "description": "Embedded Guidance Scale"
+      "description": "Embedded Guidance Scale",
+      "widget": "hidden"
     },
     "example": {
       "type": "string",
-      "image1": "https://fakeimg.pl/832x1216/282828/eae0d0/?text=#.png",
-      "image2": "https://fakeimg.pl/832x1216/282828/eae0d0/?text=#.png",
-      "image3": "https://fakeimg.pl/832x1216/282828/eae0d0/?text=#.png",
-      "image4": "https://fakeimg.pl/832x1216/282828/eae0d0/?text=#.png",
+      "image1": "https://files.catbox.moe/xz0tug.mp4",
+      "image2": "https://files.catbox.moe/zj1hmt.mp4",
+      "image3": "https://files.catbox.moe/4l9s7g.mp4",
+      "image4": "https://fakeimg.pl/640x360/282828/eae0d0/?text=#.png",
+      "video_aspect_ratio": "60%",
+      "line1": "Video: 50% 640x360 pixels, 5 seconds",
       "widget": "example"
     }
   },
