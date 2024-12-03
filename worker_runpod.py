@@ -20,7 +20,8 @@ def generate(input):
     num_videos_per_prompt = values['num_videos_per_prompt']
     flow_shift = values['flow_shift']
     batch_size = values['batch_size']
-    seed = values['seed']
+    embedded_guidance_scale = values['embedded_guidance_scale']
+    flow_reverse = values['flow_reverse']
 
     if seed == 0:
         random.seed(int(time.time()))
@@ -32,17 +33,18 @@ def generate(input):
 
     outputs = hunyuan_video_sampler.predict(
         prompt=positive_prompt, 
-        height=args.video_size[0],
-        width=args.video_size[1],
-        video_length=args.video_length,
+        height=height,
+        width=width,
+        video_length=video_length,
         seed=seed,
-        negative_prompt=args.neg_prompt,
-        infer_steps=args.infer_steps,
-        guidance_scale=args.cfg_scale,
-        num_videos_per_prompt=args.num_videos,
-        flow_shift=args.flow_shift,
-        batch_size=args.batch_size,
-        embedded_guidance_scale=args.embedded_cfg_scale
+        negative_prompt=negative_prompt,
+        infer_steps=infer_steps,
+        guidance_scale=guidance_scale,
+        num_videos_per_prompt=num_videos_per_prompt,
+        flow_shift=flow_shift,
+        batch_size=batch_size,
+        embedded_guidance_scale=embedded_guidance_scale,
+        flow_reverse=flow_reverse
     )
     samples = outputs['samples']
     sample = samples[0].unsqueeze(0)
