@@ -65,6 +65,10 @@
       "type": "number",
       "description": "Embedded Guidance Scale"
     },
+    "flow_reverse": {
+      "type": "boolean",
+      "description": "Flow Reverse"
+    },
     "example": {
       "type": "string",
       "image1": "https://fakeimg.pl/832x1216/282828/eae0d0/?text=#.png",

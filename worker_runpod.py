@@ -28,6 +28,7 @@ def generate(input):
         seed = random.randint(0, 18446744073709551615)
 
     args = parse_args()
+    args.flow_reverse = flow_reverse
     hunyuan_video_sampler = HunyuanVideoSampler.from_pretrained("/content/HunyuanVideo/ckpts", args=args)
     args = hunyuan_video_sampler.args
 
@@ -43,8 +44,7 @@ def generate(input):
         num_videos_per_prompt=num_videos_per_prompt,
         flow_shift=flow_shift,
         batch_size=batch_size,
-        embedded_guidance_scale=embedded_guidance_scale,
-        flow_reverse=flow_reverse
+        embedded_guidance_scale=embedded_guidance_scale
     )
     samples = outputs['samples']
     sample = samples[0].unsqueeze(0)
