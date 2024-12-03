@@ -1,6 +1,6 @@
 {
     "positive_prompt": "a cat is running, realistic.",
-    "height": 360,
+    "height": 368,
     "width": 640,
     "video_length": 129,
     "seed": 0,
