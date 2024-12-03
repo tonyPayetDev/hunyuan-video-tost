@@ -10,6 +10,5 @@
     "num_videos_per_prompt": 1,
     "flow_shift": 7.0,
     "batch_size": 1,
-    "embedded_guidance_scale": 6.0,
-    "flow_reverse": true
+    "embedded_guidance_scale": 6.0
 }

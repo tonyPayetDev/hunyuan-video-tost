@@ -5,6 +5,11 @@ from hyvideo.utils.file_utils import save_videos_grid
 from hyvideo.config import parse_args
 from hyvideo.inference import HunyuanVideoSampler
 
+with torch.inference_mode():
+    args = parse_args()
+    args.flow_reverse = True
+    hunyuan_video_sampler = HunyuanVideoSampler.from_pretrained("/content/HunyuanVideo/ckpts", args=args)
+
 @torch.inference_mode()
 def generate(input):
     values = input["input"]
@@ -21,16 +26,10 @@ def generate(input):
     flow_shift = values['flow_shift']
     batch_size = values['batch_size']
     embedded_guidance_scale = values['embedded_guidance_scale']
-    flow_reverse = values['flow_reverse']
 
     if seed == 0:
         random.seed(int(time.time()))
         seed = random.randint(0, 18446744073709551615)
-
-    args = parse_args()
-    args.flow_reverse = flow_reverse
-    hunyuan_video_sampler = HunyuanVideoSampler.from_pretrained("/content/HunyuanVideo/ckpts", args=args)
-    args = hunyuan_video_sampler.args
 
     outputs = hunyuan_video_sampler.predict(
         prompt=positive_prompt, 
