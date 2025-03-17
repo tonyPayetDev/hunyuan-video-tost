@@ -1,5 +1,5 @@
 import os
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
 import os, json, requests, random, time, runpod, base64
 import torch
 from hyvideo.utils.file_utils import save_videos_grid
