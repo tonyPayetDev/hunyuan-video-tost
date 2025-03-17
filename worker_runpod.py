@@ -7,7 +7,7 @@ from hyvideo.inference import HunyuanVideoSampler
 # Variables de connexion à Supabase
 SUPABASE_URL = "https://rvsykocedohfdfdvbrfe.supabase.co"
 SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2c3lrb2NlZG9oZmRmZHZicmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNDA3NTcsImV4cCI6MjA1NTcxNjc1N30.HLU5iDMlk-rFvNiIOXhQFF8-KNTSJwlaR7wIQPiacDM"
-SUPABASE_BUCKET = "video"  # Nom du bucket où tu veux envoyer la vidéo
+SUPABASE_BUCKET = "video"  
 
 # Fonction d'envoi de la vidéo en base64 à Supabase
 def upload_to_supabase(video_base64, file_name):
