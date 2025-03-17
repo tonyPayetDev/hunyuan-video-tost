@@ -1,9 +1,35 @@
-import os, json, requests, random, time, runpod
-
+import os, json, requests, random, time, runpod, base64
 import torch
 from hyvideo.utils.file_utils import save_videos_grid
 from hyvideo.config import parse_args
 from hyvideo.inference import HunyuanVideoSampler
+
+# Variables de connexion à Supabase
+SUPABASE_URL = "https://rvsykocedohfdfdvbrfe.supabase.co"
+SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2c3lrb2NlZG9oZmRmZHZicmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNDA3NTcsImV4cCI6MjA1NTcxNjc1N30.HLU5iDMlk-rFvNiIOXhQFF8-KNTSJwlaR7wIQPiacDM"
+SUPABASE_BUCKET = "video"  # Nom du bucket où tu veux envoyer la vidéo
+
+# Fonction d'envoi de la vidéo en base64 à Supabase
+def upload_to_supabase(video_base64, file_name):
+    url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_name}"
+    
+    headers = {
+        "Authorization": f"Bearer {SUPABASE_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        "file": video_base64,
+        "file_name": file_name
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        print("Video uploaded successfully!")
+        return response.json()  # Retourne la réponse de Supabase
+    else:
+        print(f"Error uploading video: {response.status_code}, {response.text}")
+        return {"error": response.text}
 
 with torch.inference_mode():
     args = parse_args()
@@ -45,64 +71,32 @@ def generate(input):
         batch_size=batch_size,
         embedded_guidance_scale=embedded_guidance_scale
     )
+
     samples = outputs['samples']
     sample = samples[0].unsqueeze(0)
-    save_videos_grid(sample, f"/content/hunyuan-video-{seed}-tost.mp4", fps=24)
+    video_path = f"/content/hunyuan-video-{seed}-tost.mp4"
+    save_videos_grid(sample, video_path, fps=24)
 
-    result = f"/content/hunyuan-video-{seed}-tost.mp4"
     try:
-        notify_uri = values['notify_uri']
-        del values['notify_uri']
-        notify_token = values['notify_token']
-        del values['notify_token']
-        discord_id = values['discord_id']
-        del values['discord_id']
-        if(discord_id == "discord_id"):
-            discord_id = os.getenv('com_camenduru_discord_id')
-        discord_channel = values['discord_channel']
-        del values['discord_channel']
-        if(discord_channel == "discord_channel"):
-            discord_channel = os.getenv('com_camenduru_discord_channel')
-        discord_token = values['discord_token']
-        del values['discord_token']
-        if(discord_token == "discord_token"):
-            discord_token = os.getenv('com_camenduru_discord_token')
-        job_id = values['job_id']
-        del values['job_id']
-        default_filename = os.path.basename(result)
-        with open(result, "rb") as file:
-            files = {default_filename: file.read()}
-        payload = {"content": f"{json.dumps(values)} <@{discord_id}>"}
-        response = requests.post(
-            f"https://discord.com/api/v9/channels/{discord_channel}/messages",
-            data=payload,
-            headers={"Authorization": f"Bot {discord_token}"},
-            files=files
-        )
-        response.raise_for_status()
-        result_url = response.json()['attachments'][0]['url']
-        notify_payload = {"jobId": job_id, "result": result_url, "status": "DONE"}
-        web_notify_uri = os.getenv('com_camenduru_web_notify_uri')
-        web_notify_token = os.getenv('com_camenduru_web_notify_token')
-        if(notify_uri == "notify_uri"):
-            requests.post(web_notify_uri, data=json.dumps(notify_payload), headers={'Content-Type': 'application/json', "Authorization": web_notify_token})
-        else:
-            requests.post(web_notify_uri, data=json.dumps(notify_payload), headers={'Content-Type': 'application/json', "Authorization": web_notify_token})
-            requests.post(notify_uri, data=json.dumps(notify_payload), headers={'Content-Type': 'application/json', "Authorization": notify_token})
-        return {"jobId": job_id, "result": result_url, "status": "DONE"}
+        # Convertir la vidéo en base64
+        with open(video_path, "rb") as file:
+            video_base64 = base64.b64encode(file.read()).decode("utf-8")
+
+        # Upload de la vidéo sur Supabase
+        file_name = f"hunyuan-video-{seed}.mp4"  # Le nom que tu souhaites donner à la vidéo
+        upload_response = upload_to_supabase(video_base64, file_name)
+
+        if "error" not in upload_response:
+            return {"video_base64": video_base64, "status": "DONE", "supabase_response": upload_response}
+
+        return {"status": "FAILED", "error": upload_response.get("error", "Unknown error")}
+
     except Exception as e:
-        error_payload = {"jobId": job_id, "status": "FAILED"}
-        try:
-            if(notify_uri == "notify_uri"):
-                requests.post(web_notify_uri, data=json.dumps(error_payload), headers={'Content-Type': 'application/json', "Authorization": web_notify_token})
-            else:
-                requests.post(web_notify_uri, data=json.dumps(error_payload), headers={'Content-Type': 'application/json', "Authorization": web_notify_token})
-                requests.post(notify_uri, data=json.dumps(error_payload), headers={'Content-Type': 'application/json', "Authorization": notify_token})
-        except:
-            pass
-        return {"jobId": job_id, "result": f"FAILED: {str(e)}", "status": "FAILED"}
+        return {"error": str(e), "status": "FAILED"}
+
     finally:
-        if os.path.exists(result):
-            os.remove(result)
+        if os.path.exists(video_path):
+            os.remove(video_path)
+
 
 runpod.serverless.start({"handler": generate})
