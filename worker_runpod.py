@@ -12,7 +12,7 @@ from hyvideo.inference import HunyuanVideoSampler
 
 # Variables de connexion à Supabase 
 SUPABASE_URL = "https://rvsykocedohfdfdvbrfe.supabase.co"
-SUPABASE_API_KEY = ${SUPA_ROLE_TOKEN}
+SUPABASE_API_KEY = "${SUPA_ROLE_TOKEN}"
 SUPABASE_BUCKET = "video"
 
 # Fonction d'envoi de la vidéo à Supabase
