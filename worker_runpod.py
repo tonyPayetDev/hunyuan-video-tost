@@ -1,6 +1,10 @@
 import os
-os.environ["TOKENIZERS_PARALLELISM"] = "true"
-import os, json, requests, random, time, runpod, base64
+import json
+import requests
+import random
+import time
+import runpod
+import base64
 import torch
 from hyvideo.utils.file_utils import save_videos_grid
 from hyvideo.config import parse_args
@@ -8,31 +12,29 @@ from hyvideo.inference import HunyuanVideoSampler
 
 # Variables de connexion à Supabase 
 SUPABASE_URL = "https://rvsykocedohfdfdvbrfe.supabase.co"
-SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2c3lrb2NlZG9oZmRmZHZicmZlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDE0MDc1NywiZXhwIjoyMDU1NzE2NzU3fQ.2XOQd1dzTuBfq7gMdYRC7uOzYj72LThaHWszhCGhzHA"
-SUPABASE_BUCKET = "video"  
+SUPABASE_API_KEY = ${SUPA_ROLE_TOKEN}
+SUPABASE_BUCKET = "video"
 
-# Fonction d'envoi de la vidéo en base64 à Supabase
-def upload_to_supabase(video_base64, file_name):
+# Fonction d'envoi de la vidéo à Supabase
+def upload_to_supabase(video_path, file_name):
     url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_name}"
     
     headers = {
         "Authorization": f"Bearer {SUPABASE_API_KEY}",
-        "Content-Type": "application/json",
     }
 
-    data = {
-        "file": video_base64,
-        "file_name": file_name
-    }
+    with open(video_path, "rb") as file:
+        files = {"file": file}
+        response = requests.post(url, headers=headers, files=files)
 
-    response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         print("Video uploaded successfully!")
-        return response.json()  # Retourne la réponse de Supabase
+        return response.json()
     else:
         print(f"Error uploading video: {response.status_code}, {response.text}")
         return {"error": response.text}
 
+# Initialisation du sampler
 with torch.inference_mode():
     args = parse_args()
     args.flow_reverse = True
@@ -74,31 +76,39 @@ def generate(input):
         embedded_guidance_scale=embedded_guidance_scale
     )
 
-    samples = outputs['samples']
+    # Vérification des outputs
+    samples = outputs.get("samples", [])
+    if not isinstance(samples, list) or len(samples) == 0:
+        return {"status": "FAILED", "error": "No valid sample found"}
+
+    # Traitement du premier sample
     sample = samples[0].unsqueeze(0)
     video_path = f"/content/hunyuan-video-{seed}-tost.mp4"
+
+    # Sauvegarde de la vidéo
     save_videos_grid(sample, video_path, fps=24)
 
+    # Vérification si le fichier existe
+    if not os.path.exists(video_path):
+        return {"status": "FAILED", "error": f"File {video_path} not found"}
+
     try:
-        # Convertir la vidéo en base64
-        with open(video_path, "rb") as file:
-            video_base64 = base64.b64encode(file.read()).decode("utf-8")
+        # Upload sur Supabase
+        file_name = f"hunyuan-video-{seed}.mp4"
+        upload_response = upload_to_supabase(video_path, file_name)
 
-        # Upload de la vidéo sur Supabase
-        file_name = f"hunyuan-video-{seed}.mp4"  # Le nom que tu souhaites donner à la vidéo
-        upload_response = upload_to_supabase(video_base64, file_name)
+        # Vérification du retour de Supabase
+        if "error" in upload_response:
+            raise Exception(upload_response["error"])
 
-        if "error" not in upload_response:
-            return {"video_base64": video_base64, "status": "DONE", "supabase_response": upload_response}
-
-        return {"status": "FAILED", "error": upload_response.get("error", "Unknown error")}
+        return {"status": "DONE", "supabase_response": upload_response}
 
     except Exception as e:
-        return {"error": str(e), "status": "FAILED"}
+        return {"status": "FAILED", "error": str(e)}
 
     finally:
         if os.path.exists(video_path):
             os.remove(video_path)
 
-
+# Lancement du serveur Runpod
 runpod.serverless.start({"handler": generate})
